@@ -8,7 +8,7 @@ const FoodTracker: React.FC = () => {
   const [foodEntries, setFoodEntries] = useState<{ id: number; foodName: string; calories: number }[]>([]);
 
   useEffect(() => {
-    api.get("/food/1") // Replace with dynamic user ID later
+    api.get("/food/1") // Replace with dynamic user ID later when implemented
       .then(response => setFoodEntries(response.data))
       .catch(error => console.error("Error fetching food entries:", error));
   }, []);
