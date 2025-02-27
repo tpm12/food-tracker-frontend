@@ -1,55 +1,63 @@
 import React, { useState, useEffect } from "react";
 import { api } from "../api";
-import { Box, Button, TextField, Typography, Paper, List, ListItem, ListItemText } from "@mui/material";
+import { Paper, Typography } from "@mui/material";
+import WaterProgress from "./WaterProgress";
+import WaterLogList from "./WaterLogList";
+import WaterInput from "./WaterInput";
 
 const WaterTracker: React.FC = () => {
-  const [water, setWater] = useState("");
   const [waterLogs, setWaterLogs] = useState<{ id: number; amount: number }[]>([]);
+  const [editId, setEditId] = useState<number | null>(null);
+  const [editAmount, setEditAmount] = useState<string>("");
+  const [dailyGoal, setDailyGoal] = useState<number>(2);
+  const [totalWaterIntake, setTotalWaterIntake] = useState<number>(0);
 
   useEffect(() => {
-    api.get("/water/1") // Replace with dynamic user ID later
-      .then(response => setWaterLogs(response.data))
-      .catch(error => console.error("Error fetching water logs:", error));
+    api.get("/water/1").then(response => {
+      setWaterLogs(response.data);
+      setTotalWaterIntake(response.data.reduce((sum, log) => sum + log.amount, 0));
+    });
+    api.get("/users/1").then(response => setDailyGoal(response.data.dailyWaterGoal || 2));
   }, []);
 
-  const handleAddWater = () => {
-    if (water) {
-      const newEntry = { user: { id: 1 }, amount: parseFloat(water) };
+  const handleAddWater = (amount: number) => {
+    api.post("/water", { user: { id: 1 }, amount }).then(response => {
+      setWaterLogs([...waterLogs, response.data]);
+      setTotalWaterIntake(totalWaterIntake + amount);
+    });
+  };
 
-      api.post("/water", newEntry)
-        .then(response => {
-          setWaterLogs([...waterLogs, response.data]);
-          setWater("");
-        })
-        .catch(error => console.error("Error adding water intake:", error));
-    }
+  const handleDeleteWater = (id: number, amount: number) => {
+    api.delete(`/water/${id}`).then(() => {
+      setWaterLogs(waterLogs.filter(entry => entry.id !== id));
+      setTotalWaterIntake(totalWaterIntake - amount);
+    });
   };
 
   return (
     <Paper elevation={3} sx={{ p: 3, width: "100%", maxWidth: 400 }}>
-      <Typography variant="h5" align="center" gutterBottom>
-        💧 Water Tracker
-      </Typography>
-      <Box display="flex" flexDirection="column" gap={2}>
-        <TextField
-          label="Water Intake (liters)"
-          type="number"
-          variant="outlined"
-          value={water}
-          onChange={(e) => setWater(e.target.value)}
-        />
-        <Button variant="contained" color="primary" onClick={handleAddWater}>
-          Log Water
-        </Button>
-      </Box>
-
-      <List sx={{ mt: 2 }}>
-        {waterLogs.map((log) => (
-          <ListItem key={log.id} divider>
-            <ListItemText primary={`${log.amount} L`} />
-          </ListItem>
-        ))}
-      </List>
+      <Typography variant="h5" align="center" gutterBottom>💧 Water Tracker</Typography>
+      <WaterProgress totalWaterIntake={totalWaterIntake} dailyGoal={dailyGoal} />
+      <WaterInput handleAddWater={handleAddWater} />
+      <WaterLogList 
+        waterLogs={waterLogs}
+        handleDeleteWater={handleDeleteWater}
+        handleEditClick={(id, amount) => { setEditId(id); setEditAmount(amount.toString()); }}
+        editId={editId}
+        editAmount={editAmount}
+        setEditAmount={setEditAmount}
+        setEditId={setEditId}
+        handleEditSave={() => {
+          if (editId !== null && editAmount) {
+            api.put(`/water/${editId}`, { amount: parseFloat(editAmount) }).then(response => {
+              setWaterLogs(waterLogs.map(entry => (entry.id === editId ? response.data : entry)));
+              setTotalWaterIntake(waterLogs.reduce((sum, log) => (log.id === editId ? sum + parseFloat(editAmount) - log.amount : sum + log.amount), 0));
+              setEditId(null);
+              setEditAmount("");
+            });
+          }
+        }}
+      />
     </Paper>
   );
 };

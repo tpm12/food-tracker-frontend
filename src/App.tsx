@@ -1,20 +1,17 @@
 import React from "react";
-import { Routes, Route, Link } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
+import DashboardLayout from "./layouts/DashboardLayout";
 import Home from "./pages/Home";
+import WaterTracker from "./components/WaterTracker";
 
 const App: React.FC = () => {
   return (
-    <div>
-      <nav>
-        <ul>
-          <li><Link to="/">Home</Link></li>
-        </ul>
-      </nav>
-
+    <DashboardLayout>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/water-tracker" element={<WaterTracker />} />
       </Routes>
-    </div>
+    </DashboardLayout>
   );
 };
 
