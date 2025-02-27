@@ -1,18 +1,24 @@
 import React from "react";
 import FoodTracker from "../components/FoodTracker";
 import WaterTracker from "../components/WaterTracker";
+import { Container, Grid, Typography } from "@mui/material";
 
 const Home: React.FC = () => {
   return (
-    <div>
-      <h1>Welcome to Food Tracker</h1>
-      <p>Track your daily food and water intake.</p>
-      
-      <div style={{ display: "flex", gap: "20px" }}>
-        <FoodTracker />
-        <WaterTracker />
-      </div>
-    </div>
+    <Container sx={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", backgroundColor: "#f5f5f5", pt: 4 }}>
+      <Typography variant="h3" align="center" gutterBottom>
+        🥗 Food & Water Tracker
+      </Typography>
+
+      <Grid container spacing={4} justifyContent="center">
+        <Grid item>
+          <FoodTracker />
+        </Grid>
+        <Grid item>
+          <WaterTracker />
+        </Grid>
+      </Grid>
+    </Container>
   );
 };
 

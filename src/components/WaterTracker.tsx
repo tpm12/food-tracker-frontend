@@ -1,23 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { api } from "../api";
+import { Box, Button, TextField, Typography, Paper, List, ListItem, ListItemText } from "@mui/material";
 
 const WaterTracker: React.FC = () => {
   const [water, setWater] = useState("");
   const [waterLogs, setWaterLogs] = useState<{ id: number; amount: number }[]>([]);
 
-  // Fetch existing water intake logs
   useEffect(() => {
-    api.get("/water/1") // Replace 1 with dynamic user ID later
+    api.get("/water/1") // Replace with dynamic user ID later
       .then(response => setWaterLogs(response.data))
       .catch(error => console.error("Error fetching water logs:", error));
   }, []);
 
   const handleAddWater = () => {
     if (water) {
-      const newEntry = {
-        user: { id: 1 }, // Replace with dynamic user ID later
-        amount: parseFloat(water),
-      };
+      const newEntry = { user: { id: 1 }, amount: parseFloat(water) };
 
       api.post("/water", newEntry)
         .then(response => {
@@ -29,17 +26,31 @@ const WaterTracker: React.FC = () => {
   };
 
   return (
-    <div>
-      <h2>Water Tracker</h2>
-      <input type="number" placeholder="Water Intake (liters)" value={water} onChange={(e) => setWater(e.target.value)} />
-      <button onClick={handleAddWater}>Log Water</button>
+    <Paper elevation={3} sx={{ p: 3, width: "100%", maxWidth: 400 }}>
+      <Typography variant="h5" align="center" gutterBottom>
+        💧 Water Tracker
+      </Typography>
+      <Box display="flex" flexDirection="column" gap={2}>
+        <TextField
+          label="Water Intake (liters)"
+          type="number"
+          variant="outlined"
+          value={water}
+          onChange={(e) => setWater(e.target.value)}
+        />
+        <Button variant="contained" color="primary" onClick={handleAddWater}>
+          Log Water
+        </Button>
+      </Box>
 
-      <ul>
+      <List sx={{ mt: 2 }}>
         {waterLogs.map((log) => (
-          <li key={log.id}>{log.amount} L</li>
+          <ListItem key={log.id} divider>
+            <ListItemText primary={`${log.amount} L`} />
+          </ListItem>
         ))}
-      </ul>
-    </div>
+      </List>
+    </Paper>
   );
 };
 

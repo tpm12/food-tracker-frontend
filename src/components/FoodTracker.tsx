@@ -1,25 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { api } from "../api";
+import { Box, Button, TextField, Typography, Paper, List, ListItem, ListItemText } from "@mui/material";
 
 const FoodTracker: React.FC = () => {
   const [food, setFood] = useState("");
   const [calories, setCalories] = useState("");
   const [foodEntries, setFoodEntries] = useState<{ id: number; foodName: string; calories: number }[]>([]);
 
-  // Fetch existing food entries from the backend
   useEffect(() => {
-    api.get("/food/1") // Assuming user ID is 1 (Replace this with dynamic user ID later)
+    api.get("/food/1") // Replace with dynamic user ID later
       .then(response => setFoodEntries(response.data))
       .catch(error => console.error("Error fetching food entries:", error));
   }, []);
 
   const handleAddFood = () => {
     if (food && calories) {
-      const newEntry = {
-        user: { id: 1 }, // Replace with dynamic user ID later
-        foodName: food,
-        calories: parseFloat(calories),
-      };
+      const newEntry = { user: { id: 1 }, foodName: food, calories: parseFloat(calories) };
 
       api.post("/food", newEntry)
         .then(response => {
@@ -32,20 +28,37 @@ const FoodTracker: React.FC = () => {
   };
 
   return (
-    <div>
-      <h2>Food Tracker</h2>
-      <input type="text" placeholder="Food Name" value={food} onChange={(e) => setFood(e.target.value)} />
-      <input type="number" placeholder="Calories" value={calories} onChange={(e) => setCalories(e.target.value)} />
-      <button onClick={handleAddFood}>Add Food</button>
+    <Paper elevation={3} sx={{ p: 3, width: "100%", maxWidth: 400 }}>
+      <Typography variant="h5" align="center" gutterBottom>
+        🍽️ Food Tracker
+      </Typography>
+      <Box display="flex" flexDirection="column" gap={2}>
+        <TextField
+          label="Food Name"
+          variant="outlined"
+          value={food}
+          onChange={(e) => setFood(e.target.value)}
+        />
+        <TextField
+          label="Calories"
+          type="number"
+          variant="outlined"
+          value={calories}
+          onChange={(e) => setCalories(e.target.value)}
+        />
+        <Button variant="contained" color="primary" onClick={handleAddFood}>
+          Add Food
+        </Button>
+      </Box>
 
-      <ul>
+      <List sx={{ mt: 2 }}>
         {foodEntries.map((entry) => (
-          <li key={entry.id}>
-            {entry.foodName} - {entry.calories} kcal
-          </li>
+          <ListItem key={entry.id} divider>
+            <ListItemText primary={`${entry.foodName} - ${entry.calories} kcal`} />
+          </ListItem>
         ))}
-      </ul>
-    </div>
+      </List>
+    </Paper>
   );
 };
 
